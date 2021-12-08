@@ -7,7 +7,7 @@ from filters import IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter, \
     IsPrivateFilter, IsGroupFilter
 
 # Конфигурация логинга
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # Условие запуска
 if not config.BOT_TOKEN:
