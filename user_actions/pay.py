@@ -3,7 +3,7 @@ from aiogram.types.message import Message
 
 import config
 import database
-from utils import get_name_, notify_
+from additional.utils import get_name_, notify_
 
 
 async def init_pay(message: Message, sum_: int, user_: int) -> None:

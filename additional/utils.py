@@ -16,6 +16,7 @@ async def get_name_(message: Message) -> str:
             name_ = message.chat.title
         except Exception as e:
             logging.debug(e)
+
         if not name_:
             try:
                 name_ = message.from_user.full_name
@@ -42,23 +43,6 @@ async def notify_(text_: str, user_: int) -> bool:
     except Exception as e:
         logging.warning(e)
         return False
-
-
-def human_format(num: int) -> str:
-    """
-    Форматированние числа в удобный вид для людей
-    Взял код с - https://stackoverflow.com/questions/579310/formatting-long-numbers-as-strings-in-python/45846841
-    :param num: Любое положительное число
-    :return: Пример на выходе - 9.99K
-    """
-    num = float('{:.3g}'.format(num))
-    magnitude = 0
-
-    while abs(num) >= 1000:
-        magnitude += 1
-        num /= 1000.0
-
-    return '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])
 
 
 def number_to_words(number: int) -> str:

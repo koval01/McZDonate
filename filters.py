@@ -6,7 +6,7 @@ import config
 
 class IsOwnerFilter(BoundFilter):
     """
-    Custom filter "is_owner".
+    Проверяем является ли пользователь владельцем бота
     """
     key = "is_owner"
 
@@ -19,7 +19,7 @@ class IsOwnerFilter(BoundFilter):
 
 class IsAdminFilter(BoundFilter):
     """
-    Filter that checks for admin rights existence
+    Проверяем ялвяется ли пользователь администратором
     """
     key = "is_admin"
 
@@ -33,7 +33,7 @@ class IsAdminFilter(BoundFilter):
 
 class IsPrivateFilter(BoundFilter):
     """
-    Filter for private chat
+    Проверяем является ли чат с ботом приватным
     """
     key = "is_private"
 
@@ -46,7 +46,7 @@ class IsPrivateFilter(BoundFilter):
 
 class IsGroupFilter(BoundFilter):
     """
-    Filter for group chat
+    Проверяем является ли чат с ботом групповым
     """
     key = "is_group"
 

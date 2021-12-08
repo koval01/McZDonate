@@ -6,19 +6,19 @@ import config
 from filters import IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter, \
     IsPrivateFilter, IsGroupFilter
 
-# Configure logging
+# Конфигурация логинга
 logging.basicConfig(level=logging.INFO)
 
-# prerequisites
+# Условие запуска
 if not config.BOT_TOKEN:
-    exit("No token provided")
+    exit("Не указан токен бота")
 
-# init
+# Инициализируем хранилище и диспетчер бота
 storage = MemoryStorage()
 bot = Bot(token=config.BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=storage)
 
-# activate filters
+# Инициализируем фильтры
 dp.filters_factory.bind(IsOwnerFilter)
 dp.filters_factory.bind(IsAdminFilter)
 dp.filters_factory.bind(MemberCanRestrictFilter)
