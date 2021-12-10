@@ -1,9 +1,9 @@
 import logging
 from aiogram.types.message import Message
 
-import config
+from other import config
 import database
-from additional.utils import get_name_, notify_
+from other.utils import get_name_, notify_
 
 
 async def init_pay(message: Message, sum_: int, user_: int) -> None:

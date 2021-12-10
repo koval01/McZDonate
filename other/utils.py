@@ -1,7 +1,15 @@
 import logging
+import re
+from random import choice
+from string import ascii_letters, digits
+
 from aiogram.types.message import Message
 
 from dispatcher import bot
+
+
+def get_random_string(length=32) -> str:
+    return "".join([choice(ascii_letters + digits) for _ in range(length)])
 
 
 async def get_name_(message: Message) -> str:
@@ -73,3 +81,14 @@ def number_to_words(number: int) -> str:
         return b.get(number)
     else:
         return 'Число вне диапазона среза!'
+
+
+def nick_check(nick: str) -> bool:
+    """
+    Проверка ника на валидность
+    :param nick: Строка с ником
+    :return: Результат проверки
+    """
+    if re.sub(r"[^A-Za-z0-9_]*", "", nick) == nick \
+            and 2 < len(nick) <= 40:
+        return True

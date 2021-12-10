@@ -1,265 +1,75 @@
 import logging
-import psycopg2
-from aiogram.types.message import Message
 
-from config import DB_HOST, DB_NAME, DB_PASS, DB_USER
+import psycopg2
+import psycopg2.extras
+
+from other.config import DB_HOST, DB_NAME, DB_PASS, DB_USER
 
 
 class PostSQL:
-    def __init__(self, msg: Message = None, set_private=False) -> None:
+    def __init__(self) -> None:
         self.conn = psycopg2.connect(
             dbname=DB_NAME, user=DB_USER,
             password=DB_PASS, host=DB_HOST
         )
-        self.cursor = self.conn.cursor()
-
-        try:
-            #  Проверяем есть ли message
-            if msg: pass
-        except Exception as e:
-            logging.debug(e)
-
-        try:
-            #  Если нету msg, то просто скипаем этот блок
-            if msg.chat.type in ["group", "supergroup"] and not set_private:
-                self.user_id = msg.chat.id
-                self.name = msg.chat.title
-                self.username = "@group"
-            elif msg.chat.type == "private" or set_private:
-                self.user_id = msg.from_user.id
-                self.name = msg.from_user.first_name
-                self.username = msg.from_user.username
-        except Exception as e:
-            logging.debug(e)
+        self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     def finish(self) -> None:
         self.cursor.close()
         self.conn.close()
 
-    def check_user(self, custom_user=0) -> list:
-        if custom_user: self.user_id = custom_user
+    def get_all_services(self) -> list:
         try:
-            self.cursor.execute(
-                'select * from wallet where user_id = %(user_id)s',
-                {'user_id': self.user_id},
-            )
+            self.cursor.execute('SELECT * FROM web_zalupa_servicedonate LIMIT 200')
             result = self.cursor.fetchall()
             self.finish()
-            return result[0]
+            return result
         except Exception as e:
             logging.debug(e)
 
-    def add_user(self, custom_user=0) -> None:
-        if custom_user: self.user_id = custom_user
+    def get_service(self, service_id) -> dict:
+        try:
+            self.cursor.execute('SELECT * FROM web_zalupa_servicedonate WHERE id = %(service_id)s', {
+                'service_id': service_id
+            })
+            result = self.cursor.fetchone()
+            self.finish()
+            return result
+        except Exception as e:
+            logging.debug(e)
+
+    def add_pay(self, player: str, service: str, price: int, user_id: int) -> int:
         self.cursor.execute(
-            'insert into wallet(name, balance, user_id, username) values (%(name)s, 0, %(user_id)s, %(username)s)',
+            'insert into web_zalupa_servicedonatestatus(name_player, service_id, status_pay, price, user_id_bot) '
+            'values (%(player)s, %(service)s, %(status)s, %(price)s, %(user_id)s) RETURNING id',
             {
-                'user_id': self.user_id,
-                'name': self.name,
-                'username': self.username,
+                'player': player,
+                'service': service,
+                'status': 'wait',
+                'price': price,
+                'user_id': user_id,
             }
         )
         self.conn.commit()
+        result = self.cursor.fetchone()[0]
         self.finish()
+        return int(result)
 
-    def get_balance(self, custom_user=0) -> int:
-        if custom_user: self.user_id = custom_user
+    def get_status(self, receipt_id) -> dict:
+        try:
+            self.cursor.execute('SELECT * FROM web_zalupa_servicedonatestatus WHERE id = %(receipt_id)s', {
+                'receipt_id': receipt_id
+            })
+            result = self.cursor.fetchone()
+            self.finish()
+            return result
+        except Exception as e:
+            logging.debug(e)
+
+    def update_status(self, receipt_id, status) -> None:
         self.cursor.execute(
-            'select balance from wallet where user_id = %(user_id)s limit 1',
-            {'user_id': self.user_id},
-        )
-        result = self.cursor.fetchall()
-        self.finish()
-        return result[0][0]
-
-    def get_sum_balance(self) -> int:
-        self.cursor.execute(
-            'select sum(balance) from wallet limit 1',
-        )
-        result = self.cursor.fetchall()
-        self.finish()
-        return result[0][0]
-
-    def get_top_balance(self) -> int:
-        self.cursor.execute(
-            'select name, balance, user_id from wallet order by balance desc limit 10',
-        )
-        result = self.cursor.fetchall()
-        self.finish()
-        return result
-
-    def modify_name_(self, name, custom_user=0) -> None:
-        if custom_user: self.user_id = custom_user
-        self.cursor.execute(
-            'update wallet set name = %(name)s where user_id = %(user_id)s',
-            {'user_id': self.user_id, 'name': name},
-        )
-        self.conn.commit()
-        self.finish()
-
-    def modify_balance(self, coins, take=False, custom_user=0) -> None:
-        if custom_user: self.user_id = custom_user
-        if take:
-            x = "-"
-        else:
-            x = "+"
-        self.cursor.execute(
-            f'update wallet set balance = balance {x} %(coins)s where user_id = %(user_id)s',
-            {'user_id': self.user_id, 'coins': coins},
-        )
-        self.conn.commit()
-        self.finish()
-
-    def modify_slaves(self, slaves=1, take=False, custom_user=0) -> None:
-        if custom_user: self.user_id = custom_user
-        if take:
-            x = "-"
-        else:
-            x = "+"
-        self.cursor.execute(
-            f'update wallet set slaves = slaves {x} %(slaves)s where user_id = %(user_id)s',
-            {'user_id': self.user_id, 'slaves': slaves},
-        )
-        self.conn.commit()
-        self.finish()
-
-    def get_slaves(self, custom_user=0) -> int:
-        if custom_user: self.user_id = custom_user
-        self.cursor.execute(
-            'select slaves from wallet where user_id = %(user_id)s limit 1',
-            {'user_id': self.user_id},
-        )
-        result = self.cursor.fetchone()
-        self.finish()
-        return result[0]
-
-    def get_slave_owners(self) -> int:
-        self.cursor.execute(
-            'select user_id, slaves from wallet where slaves > 0',
-        )
-        result = self.cursor.fetchall()
-        self.finish()
-        return result
-
-
-class PostSQL_ChatManager:
-    def __init__(self, msg: Message) -> None:
-        self.conn = psycopg2.connect(
-            dbname=DB_NAME, user=DB_USER,
-            password=DB_PASS, host=DB_HOST
-        )
-        self.cursor = self.conn.cursor()
-
-        if msg.chat.type in ["group", "supergroup"]:
-            self.chat_id = msg.chat.id
-            self.name = msg.chat.title
-            self.message_id = msg.message_id
-        elif msg.chat.type == "private":
-            return
-
-    def finish(self) -> None:
-        self.cursor.close()
-        self.conn.close()
-
-    def get_last_message(self) -> list:
-        self.cursor.execute(
-            'select chat_id, last_message_id from chat where chat_id = %(chat_id)s limit 1',
-            {'chat_id': self.chat_id}
-        )
-        result = self.cursor.fetchall()
-        self.finish()
-        return result[0]
-
-    def add_new_chat(self) -> None:
-        self.cursor.execute(
-            'insert into chat(chat_id, last_message_id) values (%(chat)s, %(last)s);',
-            {
-                'chat': self.chat_id,
-                'last': self.message_id,
-            }
-        )
-        self.conn.commit()
-        self.finish()
-
-    def modify_last(self) -> None:
-        self.cursor.execute(
-            'update chat set last_message_id = %(last)s where chat_id = %(chat)s',
-            {
-                'chat': self.chat_id,
-                'last': self.message_id,
-            },
-        )
-        self.conn.commit()
-        self.finish()
-
-
-class PostSQL_Inventory:
-    def __init__(self, msg: Message) -> None:
-        self.conn = psycopg2.connect(
-            dbname=DB_NAME, user=DB_USER,
-            password=DB_PASS, host=DB_HOST
-        )
-        self.cursor = self.conn.cursor()
-
-        self.user_id = msg.from_user.id
-        self.name = msg.from_user.first_name
-        self.username = msg.from_user.username
-
-        # Inventory for only private chats IDs
-
-    def finish(self) -> None:
-        self.cursor.close()
-        self.conn.close()
-
-    def get_inventory(self, custom_user=0) -> int:
-        if custom_user: self.user_id = custom_user
-        self.cursor.execute(
-            'select item_id, id from inventory where owner_id = %(user_id)s',
-            {'user_id': self.user_id},
-        )
-        result = self.cursor.fetchall()
-        self.finish()
-        return result
-
-    def get_item(self, item_id_row, custom_user=0) -> int:
-        if custom_user: self.user_id = custom_user
-        self.cursor.execute(
-            'select item_id, id, owner_id from inventory where id = %(item_id)s',
-            {'item_id': item_id_row},
-        )
-        result = self.cursor.fetchall()
-        self.finish()
-        return result[0]
-
-    def give_item(self, item_id) -> None:
-        self.cursor.execute(
-            'insert into inventory(owner_id, item_id) values (%(chat)s, %(item)s)',
-            {
-                'chat': self.user_id,
-                'item': item_id,
-            }
-        )
-        self.conn.commit()
-        self.finish()
-
-    def take_item(self, item_id_row) -> None:
-        self.cursor.execute(
-            'delete from inventory where id = %(item_id)s',
-            {
-                'item_id': item_id_row,
-            }
-        )
-        self.conn.commit()
-        self.finish()
-
-    def clear_inventory(self, owner_items: int = 0) -> None:
-        if not owner_items:
-            owner_items = self.user_id
-        self.cursor.execute(
-            'delete from inventory where owner_id = %(owner_id)s',
-            {
-                'owner_id': owner_items,
-            }
+            'UPDATE web_zalupa_servicedonatestatus set status_pay = %(status)s where id = %(receipt_id)s',
+            {'status': status, 'receipt_id': receipt_id},
         )
         self.conn.commit()
         self.finish()

@@ -2,7 +2,7 @@ import logging
 from aiogram.types.message import Message
 
 import database
-from additional.utils import get_name_, notify_
+from other.utils import get_name_, notify_
 
 
 async def init_give(message: Message = None,
