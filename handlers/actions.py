@@ -100,6 +100,7 @@ async def receipt_message(message: types.Message):
                     await message.reply(qiwi_ok)
 
                     ServiceGiver(receipt).execute()
+                    PostSQL().update_status(receipt_id, "done")
                     await message.reply(service_done)
                 else: await message.reply(qiwi_err)
                 # return
