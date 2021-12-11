@@ -1,3 +1,5 @@
+from aiogram import types
+
 from database import PostSQL
 from other import buttons
 from other.actions_outside import SellStates
