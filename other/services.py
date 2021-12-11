@@ -20,7 +20,7 @@ def get_list(services) -> list:
 
 
 def get_service_from_str(msg_text: str) -> int:
-    value = int(re.findall(r"#\d*", msg_text)[0][1:]) - 1
+    value = int(re.findall(r"#\d*", msg_text)[0][1:])
     logging.debug("%s: %s" % (get_service_from_str.__name__, value))
     return value
 
@@ -30,7 +30,7 @@ def service_check_(msg_text: str) -> str:
 
 
 def get_status_from_receipt(receipt: dict) -> str:
-    return "Игрок: %s\nУслуга: \"%s\"\nЦена: %d" % (
+    return "Игрок: %s\nУслуга: \"%s\"\nЦена: %.2f RUB" % (
         receipt["name_player"],
         PostSQL().get_service(receipt["service_id"])["name"],
         receipt["price"]
