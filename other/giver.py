@@ -1,7 +1,7 @@
 import logging
 
 from mcrcon import MCRcon
-
+from database import PostSQL
 from other.load_params import *
 
 
