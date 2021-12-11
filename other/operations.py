@@ -8,6 +8,15 @@ from other.services import get_status_from_receipt
 from other.static_msg import *
 
 
+async def give_service_(receipt, receipt_id, message) -> None:
+    try:
+        ServiceGiver(receipt).execute()
+        PostSQL().update_status(receipt_id, "done")
+        await message.reply(service_done)
+    except Exception as e:
+        logging.error("Error give service: %s" % e)
+
+
 async def receipt_process(message) -> None:
     try:
         receipt_id = int(re.sub(
@@ -21,10 +30,7 @@ async def receipt_process(message) -> None:
                 if check_result:
                     PostSQL().update_status(receipt_id, "paid")
                     await message.reply(qiwi_ok)
-
-                    ServiceGiver(receipt).execute()
-                    PostSQL().update_status(receipt_id, "done")
-                    await message.reply(service_done)
+                    await give_service_(receipt, receipt_id, message)
                 else:
                     await message.reply(qiwi_err)
             await message.reply("%s\n\n%s" % (
