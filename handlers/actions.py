@@ -24,6 +24,10 @@ class SellStates(StatesGroup):
     sell_service = State()
 
 
+async def throttled_qiwi(*args, **kwargs):
+    message = args[0]; await message.answer(throttled_check_pay)
+
+
 @dp.message_handler(commands=['start'], is_private=True)
 @dp.throttled(rate=2)
 async def start_message(message: types.Message):
@@ -60,9 +64,10 @@ async def sell_donate_state_nick(message: types.Message, state: FSMContext):
     elif service_check_(message.text):
         async with state.proxy() as data:
             list_services = PostSQL().get_all_services()  # обновляем список услуг
-            service_ = list_services[service_id]
+            service_ = [s for s in list_services if s["id"] == service_id][0]
+
             await message.reply(
-                "Был получен выбор - %s\n"
+                "Был получен выбор - \"%s\"\n"
                 "Никнейм - %s\n"
                 "Осталось оплатить. Цена - %d RUB" % (
                     message.text, data["player_name"], service_["price"]
@@ -73,8 +78,8 @@ async def sell_donate_state_nick(message: types.Message, state: FSMContext):
             )
             qiwi_link = QiwiApi(service_["price"], receipt).generate_link()
             return await message.reply(
-                "Ссылка для оплаты: <a href=\"%s\">тык</a>\nПроверить чек - /receipt_%d" % (
-                    qiwi_link, receipt
+                "Ссылка для оплаты: <a href=\"%s\">тык</a>\nПроверить чек - /receipt_%d\n\n%s" % (
+                    qiwi_link, receipt, qiwi_disclaimer
                 )
             ), await state.finish()
 
@@ -86,7 +91,7 @@ async def sell_donate_state_nick(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=['receipt_([0-9]*)']))
-@dp.throttled(rate=15)
+@dp.throttled(throttled_qiwi, rate=30)
 async def receipt_message(message: types.Message):
     try:
         receipt_id = int(re.sub(r'/receipt_([0-9]*)?.*', r'\1', message.text))

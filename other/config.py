@@ -4,9 +4,6 @@ import os
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 BOT_OWNER = os.environ.get("BOT_OWNER")
 
-BOT_USER = os.environ.get("BOT_USER")
-BOT_PASS = os.environ.get("BOT_PASS")
-
 SRV_HOST = os.environ.get("SRV_HOST")
 SRV_SECRET = os.environ.get("SRV_SECRET")
 
