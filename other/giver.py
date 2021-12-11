@@ -10,6 +10,7 @@ class ServiceGiver:
         self.host = SRV_HOST
         self.secret = SRV_SECRET
         self.receipt = receipt
+        self.port = RCON_PORT
 
     def get_service(self) -> dict:
         return PostSQL().get_service(self.receipt["service_id"])
@@ -22,7 +23,7 @@ class ServiceGiver:
     def execute(self) -> bool:
         commands = self.commands()
         try:
-            with MCRcon(self.host, self.secret) as rcon:
+            with MCRcon(self.host, self.secret, port=self.port) as rcon:
                 for cmd in commands: rcon.command(cmd)
             return True
         except Exception as e:

@@ -1,5 +1,10 @@
 import logging
 import re
+import asyncio
+
+from database import PostSQL
+import aioschedule as schedule
+
 from random import choice
 from string import ascii_letters, digits
 
@@ -92,3 +97,19 @@ def nick_check(nick: str) -> bool:
     if re.sub(r"[^A-Za-z0-9_]*", "", nick) == nick \
             and 2 < len(nick) <= 40:
         return True
+
+
+async def flush_old_receipt() -> None:
+    try:
+        PostSQL().delete_old_receipts()
+        logging.debug("delete old receipts: loop")
+    except Exception as e:
+        logging.error(e)
+
+
+async def scheduler():
+    schedule.every().minute.do(flush_old_receipt)
+
+    while True:
+        await schedule.run_pending()
+        await asyncio.sleep(1)

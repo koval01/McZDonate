@@ -52,8 +52,8 @@ async def sell_donate(message, state) -> None:
             )
             qiwi_link = QiwiApi(service_["price"], receipt).generate_link()
             return await message.reply(
-                "Ссылка для оплаты: <a href=\"%s\">тык</a>\nПроверить чек - /receipt_%d\n\n%s" % (
-                    qiwi_link, receipt, qiwi_disclaimer
+                "Ссылка для оплаты: <a href=\"%s\">тык</a>\nПроверить чек - /receipt_%d (%s)\n\n%s\n\n%s" % (
+                    qiwi_link, receipt, check_receipt_notify, old_receipt_notify, qiwi_disclaimer
                 )
             ), await state.finish()
 

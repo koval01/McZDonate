@@ -40,8 +40,8 @@ class PostSQL:
 
     def add_pay(self, player: str, service: str, price: int, user_id: int) -> int:
         self.cursor.execute(
-            'insert into web_zalupa_servicedonatestatus(name_player, service_id, status_pay, price, user_id_bot) '
-            'values (%(player)s, %(service)s, %(status)s, %(price)s, %(user_id)s) RETURNING id',
+            'insert into web_zalupa_servicedonatestatus(name_player, service_id, status_pay, price, user_id_bot, time) '
+            'values (%(player)s, %(service)s, %(status)s, %(price)s, %(user_id)s, current_timestamp) RETURNING id',
             {
                 'player': player,
                 'service': service,
@@ -82,3 +82,11 @@ class PostSQL:
             return result
         except Exception as e:
             logging.debug(e)
+
+    def delete_old_receipts(self) -> None:
+        self.cursor.execute(
+            'DELETE FROM web_zalupa_servicedonatestatus AS z WHERE z.time < NOW() - INTERVAL \'5 minutes\' '
+            'AND z.status_pay = \'wait\'',
+        )
+        self.conn.commit()
+        self.finish()
