@@ -1,10 +1,11 @@
 import logging
+
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from other.load_params import *
 from filters import IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter, \
     IsPrivateFilter, IsGroupFilter
+from other.load_params import *
 
 # Конфигурация логинга
 logging.basicConfig(level=logging.INFO)

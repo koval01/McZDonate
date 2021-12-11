@@ -2,9 +2,9 @@ from database import PostSQL
 from other import buttons
 from other.actions_outside import SellStates
 from other.buttons import create_inline_buttons
+from other.qiwi import QiwiApi
 from other.services import get_list as get_list_services
 from other.services import get_service_from_str, service_check_
-from other.qiwi import QiwiApi
 from other.static_msg import *
 from other.utils import nick_check
 

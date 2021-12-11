@@ -35,4 +35,3 @@ def get_status_from_receipt(receipt: dict) -> str:
         PostSQL().get_service(receipt["service_id"])["name"],
         receipt["price"]
     )
-

@@ -1,7 +1,6 @@
-import asyncio
 from aiogram import executor
 
-import handlers
+from handlers import *
 from dispatcher import dp
 
 if __name__ == "__main__":

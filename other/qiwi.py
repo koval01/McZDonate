@@ -35,9 +35,9 @@ class QiwiApi:
             checked = [
                 rc for rc in data
                 if rc["type"] == "IN"
-                and rc["status"] == "SUCCESS"
-                and rc["sum"]["amount"] == self.sum_
-                and rc["comment"] == comment
+                   and rc["status"] == "SUCCESS"
+                   and rc["sum"]["amount"] == self.sum_
+                   and rc["comment"] == comment
             ]
             return len(checked) != 0
         except TypeError as e:
