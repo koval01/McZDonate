@@ -2,7 +2,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from other import config
+from other.load_params import *
 from filters import IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter, \
     IsPrivateFilter, IsGroupFilter
 
@@ -10,12 +10,12 @@ from filters import IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter, \
 logging.basicConfig(level=logging.INFO)
 
 # Условие запуска
-if not config.BOT_TOKEN:
+if not BOT_TOKEN:
     exit("Не указан токен бота")
 
 # Инициализируем хранилище и диспетчер бота
 storage = MemoryStorage()
-bot = Bot(token=config.BOT_TOKEN, parse_mode="HTML")
+bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=storage)
 
 # Инициализируем фильтры

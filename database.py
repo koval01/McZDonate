@@ -73,3 +73,12 @@ class PostSQL:
         )
         self.conn.commit()
         self.finish()
+
+    def get_all_settings(self) -> list:
+        try:
+            self.cursor.execute('SELECT * FROM web_zalupa_systemsettings LIMIT 1000')
+            result = self.cursor.fetchall()
+            self.finish()
+            return result
+        except Exception as e:
+            logging.debug(e)

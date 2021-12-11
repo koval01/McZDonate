@@ -1,8 +1,9 @@
 import logging
+from urllib.parse import urlencode
 
 from requests import get
-from urllib.parse import urlencode
-from other.config import *
+
+from other.load_params import *
 
 
 class QiwiApi:
@@ -21,6 +22,7 @@ class QiwiApi:
         }, params={
             "rows": 50,
             "operation": "IN",
+            "sources": "QW_RUB",
         })
         if resp.status_code >= 200 < 400:
             resp = resp.json()["data"]
