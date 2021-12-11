@@ -8,7 +8,7 @@ from filters import IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter, \
 from other.load_params import *
 
 # Конфигурация логинга
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # Условие запуска
 if not BOT_TOKEN:
