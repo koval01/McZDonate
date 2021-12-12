@@ -1,5 +1,6 @@
 aiogram
 psycopg2
 requests
+requests-cache
 mcrcon
 aioschedule

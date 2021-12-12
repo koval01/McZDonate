@@ -1,7 +1,7 @@
 import logging
-from urllib.parse import urlencode
+import requests_cache
 
-from requests import get
+from urllib.parse import urlencode
 
 from other.load_params import *
 
@@ -15,9 +15,11 @@ class QiwiApi:
         self.pay_link = "https://qiwi.com/payment/form/99999"
         self.sum_ = sum_
         self.receipt_id = receipt_id
+        self.session_req = requests_cache.CachedSession(
+            'qiwi_api', backend="memory")
 
-    def request(self) -> dict or None:
-        resp = get(url=self.url, headers={
+    def request(self) -> (dict, dict) or None:
+        resp = self.session_req.get(url=self.url, headers={
             "Authorization": "Bearer %s" % self.qiwi_token
         }, params={
             "rows": 50,
@@ -25,11 +27,11 @@ class QiwiApi:
             "sources": "QW_RUB",
         })
         if resp.status_code >= 200 < 400:
-            resp = resp.json()["data"]
-            if len(resp): return resp
+            resp = resp.json()
+            if len(resp): return resp["data"], resp
 
     def check_receipt(self) -> bool:
-        data = self.request()
+        data, orig_data = self.request()
         comment = "Оплата чека #%d" % self.receipt_id
         try:
             checked = [
