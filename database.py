@@ -85,7 +85,7 @@ class PostSQL:
 
     def delete_old_receipts(self) -> None:
         self.cursor.execute(
-            'DELETE FROM web_zalupa_servicedonatestatus AS z WHERE z.time < NOW() - INTERVAL \'5 minutes\' '
+            'DELETE FROM web_zalupa_servicedonatestatus AS z WHERE z.time < NOW() - INTERVAL \'30 minutes\' '
             'AND z.status_pay = \'wait\'',
         )
         self.conn.commit()
