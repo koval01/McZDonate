@@ -19,7 +19,7 @@ class QiwiApi:
             'qiwi_api', backend="memory")
 
     def request(self) -> (dict, dict) or None:
-        resp = self.session_req.get(url=self.url, headers={
+        resp = self.session_req.get(url=self.url, expire_after=3, headers={
             "Authorization": "Bearer %s" % self.qiwi_token
         }, params={
             "rows": 50,

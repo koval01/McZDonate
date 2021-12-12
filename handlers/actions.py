@@ -26,6 +26,6 @@ async def sell_donate_state_nick(message: types.Message, state: FSMContext):
 
 @dp.message_handler(filters.RegexpCommandsFilter(
     regexp_commands=['receipt_([0-9]*)']), is_private=True)
-@dp.throttled(throttled_qiwi, rate=30)
+@dp.throttled(throttled_qiwi, rate=5)
 async def receipt_message(message: types.Message):
     await receipt_process(message)
