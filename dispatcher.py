@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from filters import IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter, \
-    IsPrivateFilter, IsGroupFilter
+    IsPrivateFilter, IsGroupFilter, IsBanned
 from other.load_params import *
 
 # Конфигурация логинга
@@ -25,3 +25,4 @@ dp.filters_factory.bind(IsAdminFilter)
 dp.filters_factory.bind(MemberCanRestrictFilter)
 dp.filters_factory.bind(IsPrivateFilter)
 dp.filters_factory.bind(IsGroupFilter)
+dp.filters_factory.bind(IsBanned)

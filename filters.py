@@ -2,6 +2,7 @@ from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
 
 from other import config
+from other.filters_common import user_in_banlist
 
 
 class IsOwnerFilter(BoundFilter):
@@ -15,6 +16,19 @@ class IsOwnerFilter(BoundFilter):
 
     async def check(self, message: types.Message):
         return int(message.from_user.id) == int(config.BOT_OWNER)
+
+
+class IsBanned(BoundFilter):
+    """
+    Проверяем забанен ли юзер
+    """
+    key = "is_banned"
+
+    def __init__(self, is_banned):
+        self.is_banned = is_banned
+
+    async def check(self, message: types.Message):
+        return len(await user_in_banlist(message)) == 0
 
 
 class IsAdminFilter(BoundFilter):
@@ -60,6 +74,7 @@ class IsGroupFilter(BoundFilter):
 class MemberCanRestrictFilter(BoundFilter):
     """
     Filter that checks member ability for restricting
+    aiogram code
     """
     key = 'member_can_restrict'
 

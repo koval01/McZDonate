@@ -108,7 +108,7 @@ async def flush_old_receipt() -> None:
 
 
 async def scheduler():
-    schedule.every().minute.do(flush_old_receipt)
+    schedule.every(10).seconds.do(flush_old_receipt)
 
     while True:
         await schedule.run_pending()

@@ -62,3 +62,24 @@ async def sell_donate(message, state) -> None:
     return await state.finish(), await message.reply(
         canceled, reply_markup=types.ReplyKeyboardRemove()
     )
+
+async def cancel_receipts(message) -> None:
+    u_id = message.from_user.id
+    if PostSQL().get_receipts(u_id):
+        PostSQL().delete_user_not_paid_receipts(u_id)
+        await message.reply(cancel_receipt)
+    else:
+        await message.reply(not_found_receipt)
+
+
+async def init_new_receipt(message) -> bool:
+    if PostSQL().get_receipts(message.from_user.id):
+        await message.reply(limit_receipts)
+        return False
+    return True
+
+
+async def start_buy(message) -> None:
+    if await init_new_receipt(message):
+        await message.reply(start_answer, reply_markup=buttons.cancel)
+        await SellStates.sell_nick.set()
