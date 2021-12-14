@@ -50,10 +50,12 @@ async def sell_donate(message, state) -> None:
             receipt = PostSQL().add_pay(
                 data["player_name"], service_id, service_["price"], message.from_user.id
             )
-            qiwi_link = QiwiApi(service_["price"], receipt).generate_link()
+            receipt_qiwi = QiwiApi(service_["price"], receipt["receipt_id"]).create_qiwi_receipt(
+                receipt["bill_id"], service_["name"])
+            qiwi_link = receipt_qiwi.pay_url
             return await message.reply(
-                "Ссылка для оплаты: <a href=\"%s\">тык</a>\nПроверить чек - /receipt_%d (%s)\n\n%s\n\n%s" % (
-                    qiwi_link, receipt, check_receipt_notify, old_receipt_notify, qiwi_disclaimer
+                "Ссылка для оплаты: <a href=\"%s\">тык</a>\nПроверить чек - /receipt_%d (%s)\n\n%s" % (
+                    qiwi_link, receipt["receipt_id"], check_receipt_notify, old_receipt_notify
                 )
             ), await state.finish()
 
@@ -65,8 +67,10 @@ async def sell_donate(message, state) -> None:
 
 async def cancel_receipts(message) -> None:
     u_id = message.from_user.id
-    if PostSQL().get_receipts(u_id):
+    receipts = PostSQL().get_receipts(u_id)
+    if receipts:
         PostSQL().delete_user_not_paid_receipts(u_id)
+        [QiwiApi().cancel_qiwi_receipt(r["bill_id_qiwi"]) for r in receipts]
         await message.reply(cancel_receipt)
     else:
         await message.reply(not_found_receipt)

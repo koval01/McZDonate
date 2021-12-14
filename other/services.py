@@ -30,8 +30,9 @@ def service_check_(msg_text: str) -> str:
 
 
 def get_status_from_receipt(receipt: dict) -> str:
-    return "Игрок: %s\nУслуга: \"%s\"\nЦена: %.2f RUB" % (
-        receipt["name_player"],
-        PostSQL().get_service(receipt["service_id"])["name"],
-        receipt["price"]
-    )
+    services = PostSQL().get_service(receipt["service_id"])
+    return f'Игрок: {receipt["name_player"]}\n' \
+           f'Номер чека: {receipt["id"]}\n' \
+           f'Услуга: {services["name"]}\n' \
+           f'Цена: {receipt["price"]:.2f} RUB\n' \
+           f'Статус: {receipt["status_pay"]}'

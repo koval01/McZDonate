@@ -26,7 +26,7 @@ async def receipt_process(message) -> None:
         if receipt["user_id_bot"] == message.from_user.id:
             if receipt["status_pay"] == 'wait':
                 await message.reply(qiwi_check)
-                check_result = QiwiApi(receipt["price"], receipt_id).check_receipt()
+                check_result = QiwiApi().check_qiwi_receipt(receipt["bill_id_qiwi"])
                 if check_result:
                     PostSQL().update_status(receipt_id, "paid")
                     await message.reply(qiwi_ok)
@@ -34,7 +34,7 @@ async def receipt_process(message) -> None:
                 else:
                     await message.reply(qiwi_err)
             await message.reply("%s\n\n%s" % (
-                get_status_from_receipt(receipt),
+                get_status_from_receipt(PostSQL().get_status(receipt_id)),
                 thr_receipt
             ))
     except Exception as e:

@@ -4,6 +4,7 @@ import psycopg2
 import psycopg2.extras
 
 from other.config import DB_HOST, DB_NAME, DB_PASS, DB_USER
+from other.utils_out import generate_bill_id
 
 
 class PostSQL:
@@ -13,6 +14,7 @@ class PostSQL:
             password=DB_PASS, host=DB_HOST
         )
         self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        self.new_bill_id: str = generate_bill_id()
 
     def finish(self) -> None:
         self.cursor.close()
@@ -20,7 +22,7 @@ class PostSQL:
 
     def get_all_services(self) -> list:
         try:
-            self.cursor.execute('SELECT * FROM web_zalupa_servicedonate LIMIT 200')
+            self.cursor.execute('SELECT * FROM web_zalupa_servicedonate LIMIT 230')
             result = self.cursor.fetchall()
             self.finish()
             return result
@@ -38,22 +40,26 @@ class PostSQL:
         except Exception as e:
             logging.debug(e)
 
-    def add_pay(self, player: str, service: str, price: int, user_id: int) -> int:
+    def add_pay(self, player: str, service: str, price: int, user_id: int) -> dict:
         self.cursor.execute(
-            'insert into web_zalupa_servicedonatestatus(name_player, service_id, status_pay, price, user_id_bot, time) '
-            'values (%(player)s, %(service)s, %(status)s, %(price)s, %(user_id)s, current_timestamp) RETURNING id',
+            'insert into web_zalupa_servicedonatestatus'
+            '(name_player, service_id, status_pay, price, user_id_bot, time, bill_id_qiwi) '
+            'values '
+            '(%(player)s, %(service)s, %(status)s, %(price)s, %(user_id)s, current_timestamp, %(bill_id)s) '
+            'RETURNING id',
             {
                 'player': player,
                 'service': service,
                 'status': 'wait',
                 'price': price,
                 'user_id': user_id,
+                'bill_id': self.new_bill_id
             }
         )
         self.conn.commit()
         result = self.cursor.fetchone()[0]
         self.finish()
-        return int(result)
+        return dict(receipt_id=int(result), bill_id=self.new_bill_id)
 
     def get_status(self, receipt_id: int) -> dict:
         try:
@@ -95,24 +101,24 @@ class PostSQL:
         except Exception as e:
             logging.debug(e)
 
-    def get_receipts(self, user_id: int) -> dict:
+    def get_receipts(self, user_id: int) -> list:
         try:
             self.cursor.execute(
                 'SELECT * FROM web_zalupa_servicedonatestatus AS z WHERE z.user_id_bot = %(user_id)s '
                 'AND z.status_pay = \'wait\'',
                 {
-                    'user_id': user_id
+                    'user_id': int(user_id)
                 }
             )
-            result = self.cursor.fetchone()
+            result = self.cursor.fetchall()
             self.finish()
             return result
         except Exception as e:
-            logging.debug(e)
+            logging.error(e)
 
     def delete_old_receipts(self) -> None:
         self.cursor.execute(
-            'DELETE FROM web_zalupa_servicedonatestatus AS z WHERE z.time < NOW() - INTERVAL \'5 minutes\' '
+            'DELETE FROM web_zalupa_servicedonatestatus AS z WHERE z.time < NOW() - INTERVAL \'30 minutes\' '
             'AND z.status_pay = \'wait\'',
         )
         self.conn.commit()

@@ -3,4 +3,5 @@ psycopg2
 requests
 requests-cache
 mcrcon
+pyQiwiP2P
 aioschedule

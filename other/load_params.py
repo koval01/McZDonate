@@ -20,6 +20,4 @@ SRV_HOST = get_var("SRV_HOST", dbparams)
 SRV_SECRET = get_var("SRV_SECRET", dbparams)
 RCON_PORT = get_var("RCON_PORT", dbparams)
 
-QIWI_TOKEN = get_var("QIWI_TOKEN", dbparams)
-QIWI_WALLET = get_var("QIWI_WALLET", dbparams)
-QIWI_WALLET_NICKNAME = get_var("QIWI_WALLET_NICKNAME", dbparams)
+QIWI_PRIVATE_KEY = get_var("QIWI_PRIVATE_KEY", dbparams)
