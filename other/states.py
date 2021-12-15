@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types
 
 from database import PostSQL
@@ -32,34 +34,35 @@ async def nick_state(message, state) -> None:
 
 
 async def sell_donate(message, state) -> None:
-    service_id = get_service_from_str(message.text)
-    if message.text == buttons.cancel_text:
-        pass
-    elif service_check_(message.text):
-        async with state.proxy() as data:
-            list_services = PostSQL().get_all_services()  # обновляем список услуг
-            service_ = [s for s in list_services if s["id"] == service_id][0]
+    try:
+        service_id = get_service_from_str(message.text)
+        if message.text == buttons.cancel_text:
+            pass
+        elif service_check_(message.text):
+            async with state.proxy() as data:
+                list_services = PostSQL().get_all_services()  # обновляем список услуг
+                service_ = [s for s in list_services if s["id"] == service_id][0]
 
-            await message.reply(
-                "Был получен выбор - \"%s\"\n"
-                "Никнейм - %s\n"
-                "Осталось оплатить. Цена - %d RUB" % (
-                    message.text, data["player_name"], service_["price"]
+                await message.reply(
+                    "Был получен выбор - \"%s\"\n"
+                    "Никнейм - %s\n"
+                    "Осталось оплатить. Цена - %d RUB" % (
+                        message.text, data["player_name"], service_["price"]
+                    )
                 )
-            )
-            receipt = PostSQL().add_pay(
-                data["player_name"], service_id, service_["price"], message.from_user.id
-            )
-            receipt_qiwi = QiwiApi(service_["price"], receipt["receipt_id"]).create_qiwi_receipt(
-                receipt["bill_id"], service_["name"])
-            qiwi_link = receipt_qiwi.pay_url
-            return await message.reply(
-                "Ссылка для оплаты: <a href=\"%s\">тык</a>\nПроверить чек - /receipt_%d (%s)\n\n%s" % (
-                    qiwi_link, receipt["receipt_id"], check_receipt_notify, old_receipt_notify
+                receipt = PostSQL().add_pay(
+                    data["player_name"], service_id, service_["price"], message.from_user.id
                 )
-            ), await state.finish()
-
-    else:
+                receipt_qiwi = QiwiApi(service_["price"], receipt["receipt_id"]).create_qiwi_receipt(
+                    receipt["bill_id"], service_["name"])
+                qiwi_link = receipt_qiwi.pay_url
+                return await message.reply(
+                    "Ссылка для оплаты: <a href=\"%s\">тык</a>\nПроверить чек - /receipt_%d (%s)\n\n%s" % (
+                        qiwi_link, receipt["receipt_id"], check_receipt_notify, old_receipt_notify
+                    )
+                ), await state.finish()
+    except Exception as e:
+        logging.error("Donate select error: %s" % e)
         await message.reply(service_error)
     return await state.finish(), await message.reply(
         canceled, reply_markup=types.ReplyKeyboardRemove()

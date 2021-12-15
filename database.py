@@ -61,22 +61,35 @@ class PostSQL:
         self.finish()
         return dict(receipt_id=int(result), bill_id=self.new_bill_id)
 
-    def get_status(self, receipt_id: int) -> dict:
+    def get_status(self, receipt_id: int = None, bill_id: str = None) -> dict:
         try:
-            self.cursor.execute('SELECT * FROM web_zalupa_servicedonatestatus WHERE id = %(receipt_id)s', {
-                'receipt_id': receipt_id
-            })
+            if receipt_id:
+                self.cursor.execute('SELECT * FROM web_zalupa_servicedonatestatus WHERE id = %(receipt_id)s', {
+                    'receipt_id': receipt_id
+                })
+            elif bill_id:
+                self.cursor.execute('SELECT * FROM web_zalupa_servicedonatestatus WHERE id = %(bill_id)s', {
+                    'bill_id': bill_id
+                })
             result = self.cursor.fetchone()
             self.finish()
             return result
         except Exception as e:
             logging.debug(e)
 
-    def update_status(self, receipt_id: int, status: str) -> None:
-        self.cursor.execute(
-            'UPDATE web_zalupa_servicedonatestatus set status_pay = %(status)s where id = %(receipt_id)s',
-            {'status': status, 'receipt_id': receipt_id},
-        )
+    def update_status(self, receipt_id: int = None, bill_id: str = None, status: str = None) -> None:
+        if receipt_id:
+            self.cursor.execute(
+                'UPDATE web_zalupa_servicedonatestatus set status_pay = %(status)s '
+                'where id = %(receipt_id)s',
+                {'status': status, 'receipt_id': receipt_id},
+            )
+        elif bill_id:
+            self.cursor.execute(
+                'UPDATE web_zalupa_servicedonatestatus set status_pay = %(status)s '
+                'where bill_id_qiwi = %(bill_id)s',
+                {'status': status, 'bill_id': bill_id},
+            )
         self.conn.commit()
         self.finish()
 
@@ -109,6 +122,17 @@ class PostSQL:
                 {
                     'user_id': int(user_id)
                 }
+            )
+            result = self.cursor.fetchall()
+            self.finish()
+            return result
+        except Exception as e:
+            logging.error(e)
+
+    def get_not_paid_receipts(self) -> list:
+        try:
+            self.cursor.execute(
+                'SELECT * FROM web_zalupa_servicedonatestatus WHERE status_pay = \'wait\''
             )
             result = self.cursor.fetchall()
             self.finish()

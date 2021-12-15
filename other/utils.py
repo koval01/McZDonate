@@ -3,7 +3,9 @@ import re
 import asyncio
 
 from database import PostSQL
+from other.qiwi import QiwiApi
 import aioschedule as schedule
+from other.static_msg import auto_check_qiwi_receipt
 
 from random import choice
 from string import ascii_letters, digits
@@ -99,6 +101,24 @@ def nick_check(nick: str) -> bool:
         return True
 
 
+async def receipt_process(bill_id: str, user_id: int, receipt_id: int) -> None:
+    try:
+        check_result = QiwiApi().check_qiwi_receipt(bill_id)
+        if check_result:
+            PostSQL().update_status(bill_id=bill_id, status="paid")
+            await bot.send_message(user_id, auto_check_qiwi_receipt % (
+                receipt_id, receipt_id))
+    except Exception as e:
+        logging.error("Receipt get error (utils): %s" % e)
+
+
+async def check_not_paid_receipts() -> None:
+    receipts_org = PostSQL().get_not_paid_receipts()
+    [await receipt_process(
+        r["bill_id_qiwi"], r["user_id_bot"], r["id"]
+    ) for r in receipts_org]
+
+
 async def flush_old_receipt() -> None:
     try:
         PostSQL().delete_old_receipts()
@@ -109,6 +129,7 @@ async def flush_old_receipt() -> None:
 
 async def scheduler():
     schedule.every(10).seconds.do(flush_old_receipt)
+    schedule.every(15).seconds.do(check_not_paid_receipts)
 
     while True:
         await schedule.run_pending()

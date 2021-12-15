@@ -10,8 +10,9 @@ from other.static_msg import *
 
 async def give_service_(receipt, receipt_id, message) -> None:
     try:
+        logging.info("Give service init for receipt: %d" % receipt_id)
         ServiceGiver(receipt).execute()
-        PostSQL().update_status(receipt_id, "done")
+        PostSQL().update_status(receipt_id, status="done")
         await message.reply(service_done)
     except Exception as e:
         logging.error("Error give service: %s" % e)
@@ -28,11 +29,12 @@ async def receipt_process(message) -> None:
                 await message.reply(qiwi_check)
                 check_result = QiwiApi().check_qiwi_receipt(receipt["bill_id_qiwi"])
                 if check_result:
-                    PostSQL().update_status(receipt_id, "paid")
+                    PostSQL().update_status(receipt_id, status="paid")
                     await message.reply(qiwi_ok)
-                    await give_service_(receipt, receipt_id, message)
                 else:
                     await message.reply(qiwi_err)
+            if receipt["status_pay"] == 'paid':
+                await give_service_(receipt, receipt_id, message)
             await message.reply("%s\n\n%s" % (
                 get_status_from_receipt(PostSQL().get_status(receipt_id)),
                 thr_receipt

@@ -20,9 +20,13 @@ def get_list(services) -> list:
 
 
 def get_service_from_str(msg_text: str) -> int:
-    value = int(re.findall(r"#\d*", msg_text)[0][1:])
-    logging.debug("%s: %s" % (get_service_from_str.__name__, value))
-    return value
+    try:
+        value = int(re.findall(r"#\d*", msg_text)[0][1:])
+        logging.debug("%s: %s" % (get_service_from_str.__name__, value))
+        return value
+    except Exception as e:
+        logging.error("%s: %s" % (get_service_from_str.__name__, e))
+        return 0
 
 
 def service_check_(msg_text: str) -> str:
