@@ -23,9 +23,10 @@ class ServiceGiver:
     def execute(self) -> bool:
         commands = self.commands()
         try:
-            with MCRcon(self.host, self.secret, port=self.port) as rcon:
-                for cmd in commands: rcon.command(cmd)
+            with MCRcon(self.host, self.secret, port=int(self.port)) as rcon:
+                for cmd in commands:
+                    rcon.command(cmd)
             return True
         except Exception as e:
-            logging.error(e)
+            logging.error("Giver execute error: %s" % e)
         return False
