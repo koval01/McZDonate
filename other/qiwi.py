@@ -22,9 +22,10 @@ class QiwiApi:
 
     def cancel_qiwi_receipt(self, bill_id) -> None:
         try:
+            logging.debug("Try QIWI receipt cancel. Bill ID: %s" % bill_id)
             self.p2p_qiwi.reject(bill_id=bill_id)
         except Exception as e:
-            logging.error(e)
+            logging.error("Cancel QIWI receipt error: %s" % e)
 
     def check_qiwi_receipt(self, bill_id) -> bool:
         if self.p2p_qiwi.check(bill_id=bill_id).status == "PAID":

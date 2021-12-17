@@ -3,19 +3,12 @@ import re
 
 from database import PostSQL
 
-list_services = [
-    {"id": 0, "name": "Гоша", "type": "prefix", "price": 50},
-    {"id": 1, "name": "ЖоРРик", "type": "prefix", "price": 50},
-    {"id": 2, "name": "ВалерчиК", "type": "prefix", "price": 50},
-    {"id": 3, "name": "Большой БРАТ", "type": "prefix", "price": 50},
-    {"id": 4, "name": "VIP", "type": "rank", "price": 200},
-]  # статический список услуг для теста
 
-
-def get_list(services) -> list:
+def get_list(services: list) -> list:
     return [
-        "#%d-%s %s (%d RUB)" % (s["id"], s["type"], s["name"], s["price"])
-        for s in services
+        "#%d-%s %s (%d RUB)" % (
+            s["id"], s["type"], s["name"], s["price"]
+        ) for s in services
     ]
 
 

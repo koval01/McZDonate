@@ -3,6 +3,12 @@ from other.config import DEBUG
 
 
 def get_var(name_var: str, database_params: list) -> str:
+    """
+    Загрузчик значений из БД
+    :param name_var: Имя параметра
+    :param database_params: Массив со всеми параметрами из БД
+    :return: Полученое значение параметра
+    """
     return [v["param"] for v in database_params if v["name"] == name_var][0]
 
 

@@ -5,17 +5,23 @@ import asyncio
 from database import PostSQL
 from other.qiwi import QiwiApi
 import aioschedule as schedule
-from other.static_msg import auto_check_qiwi_receipt
+from other.static_msg import *
 
 from random import choice
 from string import ascii_letters, digits
 
 from aiogram.types.message import Message
+from aiogram.dispatcher.storage import FSMContext
 
 from dispatcher import bot
 
 
-def get_random_string(length=32) -> str:
+def get_random_string(length: int = 32) -> str:
+    """
+    Генератор рандомной ASCII строки
+    :param length: длина строки
+    :return: Сгенерированая строка
+    """
     return "".join([choice(ascii_letters + digits) for _ in range(length)])
 
 
@@ -30,17 +36,37 @@ async def get_name_(message: Message) -> str:
         try:
             name_ = message.chat.title
         except Exception as e:
-            logging.debug(e)
+            logging.warning("Get name chat error: %s" % e)
 
         if not name_:
             try:
                 name_ = message.from_user.full_name
             except Exception as e:
-                logging.debug(e)
+                logging.warning("Get name user error: %s" % e)
     except Exception as e:
-        logging.warning(e)
+        logging.warning("Get name global error: %s" % e)
 
     return name_
+
+
+async def sell_donate_process(message: Message, state: FSMContext, service_id: int) -> None:
+    async with state.proxy() as data:
+        list_services = PostSQL().get_all_services()
+        service_ = [s for s in list_services if s["id"] == service_id][0]
+
+        await message.reply(
+            receipt_formatted % (message.text, data["player_name"], service_["price"])
+        )
+        receipt = PostSQL().add_pay(
+            data["player_name"], service_id, service_["price"], message.from_user.id
+        )
+        receipt_qiwi = QiwiApi(service_["price"], receipt["receipt_id"]).create_qiwi_receipt(
+            receipt["bill_id"], service_["name"])
+        qiwi_link = receipt_qiwi.pay_url
+
+        await message.reply(
+            pay_receipt % (qiwi_link, receipt["receipt_id"], check_receipt_notify, old_receipt_notify)
+        ), await state.finish()
 
 
 async def notify_(text_: str, user_: int) -> bool:
@@ -56,11 +82,11 @@ async def notify_(text_: str, user_: int) -> bool:
         )
         return True
     except Exception as e:
-        logging.warning(e)
+        logging.warning("Notify error: %s" % e)
         return False
 
 
-def number_to_words(number: int) -> str:
+def number_to_words(number: int) -> str or None:
     """
     Переводим число в пропись
     :param number: Число
@@ -87,7 +113,7 @@ def number_to_words(number: int) -> str:
     elif 10 < number < 20:
         return b.get(number)
     else:
-        return 'Число вне диапазона среза!'
+        return
 
 
 def nick_check(nick: str) -> bool:

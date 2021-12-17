@@ -5,7 +5,7 @@ cancel_text = "Отмена"
 cancel.add(KeyboardButton(cancel_text))
 
 
-async def create_inline_buttons(buttons) -> dict:
+async def create_inline_buttons(buttons: list) -> dict:
     """Функция генерации Inline клавиатуры"""
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     for key in buttons: keyboard.add(KeyboardButton(key))

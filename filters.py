@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
 
-from other import config
+from other import load_params
 from other.filters_common import user_in_banlist
 
 
@@ -15,7 +15,7 @@ class IsOwnerFilter(BoundFilter):
         self.is_owner = is_owner
 
     async def check(self, message: types.Message):
-        return int(message.from_user.id) == int(config.BOT_OWNER)
+        return int(message.from_user.id) == int(load_params.BOT_OWNER)
 
 
 class IsBanned(BoundFilter):
