@@ -6,7 +6,7 @@ from other.load_params import *
 
 
 class ServiceGiver:
-    def __init__(self, receipt):
+    def __init__(self, receipt: dict):
         self.host = SRV_HOST
         self.secret = SRV_SECRET
         self.receipt = receipt
